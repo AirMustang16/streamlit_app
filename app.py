@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 # --- Config ---
 load_dotenv()
-DEFAULT_BACKEND_URL = os.getenv("RAG_BACKEND_URL", "http://localhost:8000").rstrip("/")
+DEFAULT_BACKEND_URL = os.getenv("RAG_BACKEND_URL", "https://rag-pipeline-1gmu.onrender.com").rstrip("/")
 
 
 # --- Helpers ---
