@@ -75,7 +75,7 @@ def _render_followups(follow_ups: List[str]):
 
 # --- Page ---
 st.set_page_config(
-    page_title="RAG Chat",
+    page_title="Software Finder Demo",
     page_icon="💬",
     layout="centered",
     initial_sidebar_state="expanded",
@@ -108,10 +108,17 @@ st.session_state.backend_url = backend_url
 
 health = _healthcheck(_get_backend_url())
 status = health.get("status", "unknown")
-if status == "ok" or status == "missing_keys":
-    st.sidebar.success(f"API: {status}")
+detail = health.get("detail")
+
+if status == "ok":
+    st.sidebar.success("API healthy")
+elif status == "missing_keys":
+    st.sidebar.warning("API reachable — missing keys")
+elif status == "error":
+    msg = f"API error: {detail}" if detail else "API error"
+    st.sidebar.error(msg)
 else:
-    st.sidebar.error(f"API: {status}")
+    st.sidebar.warning("API status unknown")
 with st.sidebar.expander("Options", expanded=True):
     if "top_k" not in st.session_state:
         st.session_state.top_k = 5
@@ -123,7 +130,7 @@ if "messages" not in st.session_state:
     st.session_state.messages = []  # [{role, content}]
 
 
-st.title("RAG Chat")
+st.title("Software Finder Demo")
 st.caption("Ask questions about your ingested reviews. Clean, minimal, and fast.")
 
 
