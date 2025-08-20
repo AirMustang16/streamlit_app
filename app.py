@@ -1,5 +1,6 @@
 import os
 import time
+import html
 from typing import List, Dict, Any
 
 import requests
@@ -43,6 +44,18 @@ def _render_citations(citations: List[Dict[str, Any]]):
     if not citations:
         return
     with st.expander("Citations"):
+        tooltip = (
+            "Practical notes:\n"
+            "- The number of citations equals retrieved matches (up to top_k).\n"
+            "- rank reflects Pinecone similarity order.\n"
+            "- snippet is the chunk text; title, source_url, etc., come from metadata."
+        )
+        encoded = html.escape(tooltip).replace("\n", "&#10;")
+        st.markdown(
+            f'<span title="{encoded}">ℹ️</span> '
+            f'<span style="color:#6b7280">Hover for citation notes</span>',
+            unsafe_allow_html=True,
+        )
         for c in citations:
             rank = c.get("rank")
             title = c.get("title") or "Untitled"
@@ -122,7 +135,25 @@ else:
 with st.sidebar.expander("Options", expanded=True):
     if "top_k" not in st.session_state:
         st.session_state.top_k = 5
-    st.session_state.top_k = st.slider("Top K", 1, 20, st.session_state.top_k, help="Number of chunks to retrieve")
+    st.session_state.top_k = st.slider(
+        "Top K",
+        1,
+        20,
+        st.session_state.top_k,
+        help=(
+            "Default/range: top_k defaults to config.TOP_K (5) and is limited to 1–20.\n\n"
+            "Increase top_k:\n"
+            "- Pros: Higher recall; more diverse evidence; better for broad/ambiguous queries.\n"
+            "- Cons: Slower; higher token costs; more noise can dilute the answer or citations.\n\n"
+            "Decrease top_k:\n"
+            "- Pros: Faster; cheaper; higher precision; clearer grounding.\n"
+            "- Cons: Risk of missing key context; more ‘insufficient context’ cases.\n\n"
+            "Guidance:\n"
+            "- With precise metadata filters (e.g., author), use 3–5.\n"
+            "- For open-ended queries, 5–8 is a good balance; 8–12 only if needed.\n"
+            "- Avoid the max unless chunks are very short; more snippets → larger prompt to the LLM."
+        ),
+    )
 
 
 # --- Session state ---
