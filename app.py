@@ -75,6 +75,12 @@ def _render_citations(citations: List[Dict[str, Any]]):
             st.divider()
 
 
+def _handle_followup_click(text: str):
+    st.session_state["pending_input"] = text
+    # Trigger a rerun; input section will pick this up and send immediately
+    st.rerun()
+
+
 def _render_followups(follow_ups: List[str]):
     if not follow_ups:
         return
@@ -82,8 +88,13 @@ def _render_followups(follow_ups: List[str]):
     cols = st.columns(min(3, len(follow_ups)))
     for i, fu in enumerate(follow_ups):
         with cols[i % len(cols)]:
-            if st.button(fu, use_container_width=True, key=f"fu_{i}"):
-                st.session_state["pending_input"] = fu
+            st.button(
+                fu,
+                use_container_width=True,
+                key=f"fu_{i}",
+                on_click=_handle_followup_click,
+                args=(fu,),
+            )
 
 
 # --- Page ---
@@ -175,8 +186,7 @@ for m in st.session_state.messages:
 prompt_prefill = st.session_state.pop("pending_input", "") if "pending_input" in st.session_state else ""
 user_input = st.chat_input("Ask a question", key="chat_input", max_chars=2000)
 if prompt_prefill and not user_input:
-    # populate prefill if follow-up was clicked
-    st.session_state.chat_input = prompt_prefill
+    # If a follow-up was clicked, send it immediately without touching widget state
     user_input = prompt_prefill
 
 
